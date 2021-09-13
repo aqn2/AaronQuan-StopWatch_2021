@@ -4,13 +4,21 @@ import android.nfc.Tag
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.PersistableBundle
+import android.os.SystemClock
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.Chronometer
+import java.util.*
 
 lateinit var startButton : Button
 lateinit var resetButton : Button
 lateinit var stopButton : Button
+
+lateinit var chronometer : Chronometer
+
+var time = 0;
+//lateinit var stopChronometer: Chronometer
 
 class MainActivity : AppCompatActivity() {
     companion object{
@@ -40,15 +48,29 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun resetStopWatch() {
-        TODO("Not yet implemented")
+        time = 0
+        chronometer.setBase(SystemClock.elapsedRealtime())
+        //chronometer.setBase(SystemClock.elapsedRealtime() - (0 * 1000))
+        //if you replace the 0 with 17 it stays at 17 and so forth, so with 0 it starts at zero but 0*1000 = 0
+        stopButton.visibility = View.GONE
+        startButton.visibility = View.VISIBLE
+        chronometer.stop()
     }
 
     private fun stopStopWatch() {
-        TODO("Not yet implemented")
+        time = (chronometer.getBase() - SystemClock.elapsedRealtime()).toInt()
+        stopButton.visibility = View.GONE
+        startButton.visibility = View.VISIBLE
+        chronometer.stop()
+
+
     }
 
     private fun startStopWatch() {
-        TODO("Not yet implemented")
+        chronometer.setBase(SystemClock.elapsedRealtime() + time.toLong())
+        startButton.visibility = View.GONE
+        stopButton.visibility = View.VISIBLE
+        chronometer.start()
     }
 
 
@@ -96,5 +118,8 @@ class MainActivity : AppCompatActivity() {
         stopButton = findViewById(R.id.button_main_stop)
 
         stopButton.visibility = View.GONE
+
+        chronometer = findViewById((R.id.chronometer_main_stopwatch))
+
     }
 }
