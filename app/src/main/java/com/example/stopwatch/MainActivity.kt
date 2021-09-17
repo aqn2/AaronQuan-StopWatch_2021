@@ -19,16 +19,21 @@ lateinit var stopButton : Button
 
 lateinit var chronometer : Chronometer
 
-lateinit var startImage : ImageView
-lateinit var stopImage : ImageView
+//lateinit var startImage : ImageView
+//lateinit var stopImage : ImageView
 
 var time = 0;
+
+var isRunning = false;
 //lateinit var stopChronometer: Chronometer
 
 class MainActivity : AppCompatActivity() {
     companion object{
         //"static" constants go here yeet
         val TAG = "MainActivity" //for constants ( FINAL)
+        val BUNDLE_DISPLAYED_TIME = "displayed time"
+        val IS_RUNNING = "isRunning"
+
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,22 +41,32 @@ class MainActivity : AppCompatActivity() {
 
         wireWidgets()
 
+        time = savedInstanceState?.getInt(BUNDLE_DISPLAYED_TIME) ?:0
+        chronometer.base = SystemClock.elapsedRealtime() - time.toLong()
+        isRunning = savedInstanceState?.getBoolean(IS_RUNNING) ?: false
+        if(savedInstanceState != null)
+            if(savedInstanceState.getBoolean(IS_RUNNING)){
+                chronometer.start()
+                stopButton.visibility = View.VISIBLE
+                startButton.visibility = View.GONE
+            }
+
         startButton.setOnClickListener(){
             startStopWatch()
-            startImage.visibility = View.VISIBLE
-            stopImage.visibility = View.INVISIBLE
+            //startImage.visibility = View.VISIBLE
+            //stopImage.visibility = View.INVISIBLE
         }
 
         stopButton.setOnClickListener(){
             stopStopWatch()
-            startImage.visibility = View.INVISIBLE
-            stopImage.visibility = View.VISIBLE
+            //startImage.visibility = View.INVISIBLE
+            //stopImage.visibility = View.VISIBLE
         }
 
         resetButton.setOnClickListener(){
             resetStopWatch()
-            startImage.visibility = View.INVISIBLE
-            stopImage.visibility = View.INVISIBLE
+            //startImage.visibility = View.INVISIBLE
+            //stopImage.visibility = View.INVISIBLE
         }
 
 
@@ -59,6 +74,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun resetStopWatch() {
+        isRunning = false
         time = 0
         chronometer.setBase(SystemClock.elapsedRealtime())
         //chronometer.setBase(SystemClock.elapsedRealtime() - (0 * 1000))
@@ -70,7 +86,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun stopStopWatch() {
-        time = (chronometer.getBase() - SystemClock.elapsedRealtime()).toInt()
+        isRunning = false
+        //time = (chronometer.getBase() - SystemClock.elapsedRealtime()).toInt()
+        time = (-chronometer.getBase() + SystemClock.elapsedRealtime()).toInt()
         //the negative time passed when stopwatch stopped is kept by the time showing - the real time
         stopButton.visibility = View.GONE
         startButton.visibility = View.VISIBLE
@@ -81,7 +99,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startStopWatch() {
-        chronometer.setBase(SystemClock.elapsedRealtime() + time.toLong())
+        isRunning = true
+        chronometer.setBase(SystemClock.elapsedRealtime() - time.toLong())
         //when you start the stopwatch, it is the real time - the time paused
         startButton.visibility = View.GONE
         stopButton.visibility = View.VISIBLE
@@ -89,45 +108,12 @@ class MainActivity : AppCompatActivity() {
         //show the stop button and start chronometer
     }
 
-    /*
-
-    override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
-        super.onCreate(savedInstanceState, persistentState)
-        Log.d(TAG, "onCreate: ")
+    private fun updateDisplayTime() {
+        if(isRunning) {
+            time = (-chronometer.getBase() + SystemClock.elapsedRealtime()).toInt()
+        }
     }
 
-    override fun onStart() {
-        super.onStart()
-        Log.d(TAG, "onStart: ")
-    }
-
-    override fun onResume() {
-        super.onResume()
-        Log.d(TAG, "onResume: ")
-    }
-
-    override fun onPause() {
-        super.onPause()
-        Log.d(TAG, "onPause: ")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.d(TAG, "onStop: ")
-    }
-
-    override fun onRestart() {
-        super.onRestart()
-        Log.d(TAG, "onRestart: ")
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d(TAG, "onDestroy: ")
-    }
-
-
-     */
 
     override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
         super.onCreate(savedInstanceState, persistentState)
@@ -178,10 +164,21 @@ class MainActivity : AppCompatActivity() {
 
         chronometer = findViewById((R.id.chronometer_main_stopwatch))
 
-        startImage = findViewById(R.id.image_start_view)
-        startImage.visibility = View.INVISIBLE
-        stopImage = findViewById((R.id.image_stop_view))
-        startImage.visibility = View.INVISIBLE
+        //startImage = findViewById(R.id.image_start_view)
+        //startImage.visibility = View.INVISIBLE
+        //stopImage = findViewById((R.id.image_stop_view))
+        //startImage.visibility = View.INVISIBLE
+
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        Log.i("displayedTime", "onSaveInstanceState")
+        //a budle lets you store key valuye pairs
+        updateDisplayTime()
+        //key can be any unique text ()
+        outState.putInt(BUNDLE_DISPLAYED_TIME, time)
+        outState.putBoolean("isRunning", isRunning)
 
     }
 }
